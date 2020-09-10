@@ -13,6 +13,10 @@ const useStyles = makeStyles(theme => ({
   flexContainer: {
     display: "flex",
     flexFlow: "row wrap",
+  },
+  decodedCipher: {
+    overflowWrap: 'break-word',
+    marginBottom: theme.spacing(2)
   }
 }));
 
@@ -149,7 +153,6 @@ const App = () => {
   return (
     <Container className="App">
       <Header />
-      <br/>
       <div className={classes.flexContainer}>
         <CipherInput
           prompt="Enter plaintext to calibrate letter frequency:"
@@ -183,13 +186,13 @@ const App = () => {
         mapping={mapping}
         setMapping={setMapping}
       />
+
+      {decodedCipher && 
+      <>
       <Typography variant="h2">Decoded Output</Typography>
-      {/* <MappingTable
-        alphabet={[...decodedCipher]}
-        mapping={mapping}
-        setMapping={setMapping}
-      /> */}
-      <Typography variant="body1">{decodedCipher}</Typography>
+      <Typography className={classes.decodedCipher} variant="body1">{decodedCipher}</Typography>
+      </>
+      }
     </Container>
   );
 }
