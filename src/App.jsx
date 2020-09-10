@@ -1,12 +1,28 @@
 import React, { useState } from 'react';
 import BarChart from 'react-bar-chart';
-import './App.css';
-import SearchInput from './SearchInput';
+import CipherInput from './CipherInput';
+import MappingTable from './MappingTable';
+import Header from './Header';
+import { makeStyles, Container, Button, Typography } from '@material-ui/core';
 
-function App() {
+const useStyles = makeStyles(theme => ({
+  barChart: {
+    fill: "white",
+    flexGrow: 1,
+  },
+  flexContainer: {
+    display: "flex",
+    flexFlow: "row wrap",
+  }
+}));
 
-  // THE ALPHABET
-  const alphabet = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
+// THE ALPHABET
+const alphabet = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
+
+const App = () => {
+
+  // Define styling classes
+  const classes = useStyles();
 
   // dict of mapping from cipher to plaintext
   const [mapping, setMapping] = useState(() => {
@@ -14,13 +30,8 @@ function App() {
     alphabet.forEach(letter => result[letter] = letter);
     return result;
   });
-  
-  const handleMappingChange = (e, letter) => {
-    let targetVal = e.target.value.toUpperCase();
-    targetVal = targetVal ? targetVal[targetVal.length - 1] : ''
-    console.log(`setting to ${targetVal}`);
-    setMapping({...mapping, [letter]: targetVal})
-  }
+
+  const [cipher, setCipher] = useState('');
   const [decodedCipher, setDecodedCipher] = useState('');
 
   // letter-indexed array of alphabet frequencies
@@ -44,6 +55,7 @@ function App() {
 
   // calculate letter stats whenever cipher input changes
   const handleCipherInput = str => {
+    setCipher(str);
     setCipherStats(calculateLetterFrequencies(str));
     setDecodedCipher(decodeCipher(str, mapping));
   }
@@ -51,6 +63,7 @@ function App() {
   // calculate straight letter mapping whenever either stats change
   const setStraightLetterMapping = () => {
     setMapping(calculateStraightLetterMapping(calibrationStats, cipherStats));
+    setDecodedCipher(decodeCipher(cipher, mapping));
   }
 
   // calculate cipher text based on provided mapping
@@ -134,49 +147,50 @@ function App() {
   }
 
   return (
-    <div className="App">
-      <h1>Monoalphabetic Decryptor</h1>
-      <div>
-        <SearchInput
+    <Container className="App">
+      <Header />
+      <br/>
+      <div className={classes.flexContainer}>
+        <CipherInput
           prompt="Enter plaintext to calibrate letter frequency:"
           callback={handleCalibrationInput}
         />
-        <SearchInput
+        <CipherInput
           prompt="Enter ciphertext to decode:"
           callback={handleCipherInput}
         />
+        <div className={classes.barChart}>
+          <BarChart
+            width={500}
+            height={250}
+            margin={{top: 50, right: 50, left: 50, bottom: 50}}
+            data={calibrationStats}
+          />
+        </div>
+        <div className={classes.barChart}>
+          <BarChart
+            width={500}
+            height={250}
+            margin={{top: 50, right: 50, left: 50, bottom: 50}}
+            data={cipherStats}
+          />
+        </div>
       </div>
-      <BarChart
-        width={500}
-        height={250}
-        margin={{top: 50, right: 50, left: 50, bottom: 50}}
-        data={calibrationStats}
+      <Typography variant="h2">Decoding Table</Typography>
+      <Button variant="contained" color="primary" onClick={setStraightLetterMapping}>Set straight letter mapping</Button>
+      <MappingTable 
+        alphabet={alphabet}
+        mapping={mapping}
+        setMapping={setMapping}
       />
-      <BarChart
-        width={500}
-        height={250}
-        margin={{top: 50, right: 50, left: 50, bottom: 50}}
-        data={cipherStats}
-      />
-      <br />
-      <button onClick={setStraightLetterMapping}>Set straight letter mapping</button>
-      <table>
-        <tbody>
-          <tr>
-            <th>Ciphertext:</th>
-            {alphabet.map((letter, index) => <td key={index}>{letter}</td>)}
-          </tr>
-          <tr>
-            <th>Plaintext:</th>
-            {alphabet.map((letter, index) =>
-              <td key={index}>
-                <input value={mapping[letter]} onChange={(e, letter) => handleMappingChange(e, letter)} />
-              </td>)}
-          </tr>
-        </tbody>
-      </table>
-      <p>{decodedCipher}</p>
-    </div>
+      <Typography variant="h2">Decoded Output</Typography>
+      {/* <MappingTable
+        alphabet={[...decodedCipher]}
+        mapping={mapping}
+        setMapping={setMapping}
+      /> */}
+      <Typography variant="body1">{decodedCipher}</Typography>
+    </Container>
   );
 }
 
